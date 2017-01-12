@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ product.identifier }} - {{ renderingDate|date }}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style type="text/css">
+
+        {% if (null != customFont) %}
+            @font-face {
+                font-family: 'Custom font';
+                font-style: normal;
+                font-weight: 400;
+                src: url({{ customFont }}) format('truetype');
+            }
+        {% endif %}
+
+        * {
+            font-family: 'Custom font', Helvetica;
+            font-weight: 400;
+        }
+
+        .header {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .header .logo {
+            width: 25%;
+            height: 80px;
+            margin-left: 65%;
+            margin-bottom: 0px;
+        }
+
+        .header .title {
+            width: 75%;
+        }
+
+        .header .title h1 {
+            margin: 0 0 5px 0;
+            font-size: 34pt;
+            color: #52267D;
+            text-transform: none;
+        }
+
+        .header .title .rendering-date {
+            font-size: 12px;
+            color:#677688;
+        }
+
+        .description {
+            margin-bottom: 20px;
+        }
+
+        .short-description {
+            font-size: 10pt;
+            color:#52267D;
+            background-color:transparent;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        .long-description {
+            font-size: 11pt;
+            color:#677688;
+            background-color:transparent;
+            text-align: justify;
+        }
+
+        .long-description .left-column {
+            width: 49%;
+            padding: 2px;
+            position: absolute;
+            left: 0;
+            text-align: justify;
+        }
+
+        .long-description .right-column {
+            width: 49%;
+            margin-left: 51%;
+            padding: 2px;
+            text-align: justify;
+        }
+
+        .images {
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .images img {
+            height: 100px;
+            display: inline-block;
+            padding-right: 20px;
+        }
+
+        .icon {
+            width: 20px;
+            display:inline-block;
+            vertical-align: bottom;
+            margin: 0px;
+        }
+
+        .akeneo-icon {
+            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAC4jAAAuIwF4pT92AAABWWlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgIDwvcmRmOkRlc2NyaXB0aW9uPgogICA8L3JkZjpSREY+CjwveDp4bXBtZXRhPgpMwidZAAACxElEQVQ4EZVUO0urQRCdfIgaEVEJAfGBeRgRsdHKTrBL4T8QBBtLi/wD6/wBsRI7K+0kQmx8gRobDYKiRAVBVHxE8Tl3zrnuZ5LrvVwH9pvd2dmzZ2fPfgE1kx/Yy8uLPD4+SmNjo2BpIBAoW+2Vjf4xcPu+vb3J9PS05HI5gn18fJSt+m9At6qqqkouLy+lv7+foJ7nSSnojwHBNBgMEn9kZER2dnakFPTHgO/v71IsFgl4dXUl4+PjcnJy4oP6gK5G7mh/87iU6+trTkciEdnd3ZV0Oi0PDw8EFSuyosGsFmwcVHyMGSOFQkF7e3vVaql1dXUaj8ehEs1kMpz3Xl9fZX5+Xo6OjnhrkAGKbLPfkjw+Ppa9vT1pb2+nfJ6fn5mXzWYF7L3a2lo5PDyUvr4+WVlZkaenJ1J3+gI4Gsao3/b2NgFABAYZwVAGgoPn4uIiaVtcJycndXV1VW9vb3mE0s/p6akODAww14RNb3WkN20yFUfTzc1NBru6uugBPDo6qrOzs5xD3azoOjc3x/mOjg561BAtHA7rwcHBF+D5+bkODg4yKRaLaXNzsw8McBOxjo2NaSKRYNx0SO/YzczMEAyXSoZWD52ammJSS0uLmlC5qxVeOzs7tb6+3t/Aas5+KBSiHxoa0ouLiy9AJ4e1tTUmdHd3a3V1tQ8AhgABQE1NDeN2QdrW1sb+wsICwRwObpAB+4NoKpViEo4djUb9BpZg3tDQoABrampiXjKZVHvXPjt0eGSHfnZ2phMTE0wGs+9aa2ur9vT0cM7dLBE/PwGiYuXnv+3u7k7y+byYRARvFbq8v7+Xm5sb2d/fl6WlJcv+bcvLyzI8POyvZbQU3R2/MoZLg2xQ/K2tLbW3S4YbGxtMdSfEwGfodrUYd3RjvBC0UsPLWV9fF9OfmHbLGP4BWLrQ9bEJzHn8/2AArtzwF1jril85+1iGAAAAAElFTkSuQmCC');
+            height: 20px;
+            background-repeat: no-repeat ;
+            margin: 0px;
+        }
+
+        .group {
+            margin-bottom: 25px;
+        }
+
+        .attribute-groups h3 {
+            color: #52267D;
+            font-size: 14px;
+            font-weight: 400;
+            text-transform: uppercase;
+            padding: 2.5px 5px;
+            border-bottom: solid 1px #ccc;
+            border-top: solid 1px #ccc;
+            background: #f9f9f9;
+            margin: 0px;
+        }
+
+        .attributes {
+            clear: both;
+            position: relative;
+            border-bottom: solid 1px #ccc;
+        }
+
+        .left-column {
+            position: absolute;
+            left: 0;
+            padding: 2px 5px;
+            width: 35%;
+            font-size: 11pt;
+            color:#677688;
+        }
+
+        .right-column {
+            margin-left: 35%;
+            padding: 2px 5px;
+            width: 65%;
+            font-size: 11pt;
+            color:#677688;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        {% block header %}
+        <div class="logo">
+            <img src="bundles/pimui/images/logo.png" />
+        </div>
+        <div class="title">
+            <h1>{{ product.label }} {{ product.identifier != product.label ? '(' ~ product.identifier ~ ')' : '' }}</h1>
+            <span class="rendering-date">{{ renderingDate|date }}</span>
+        </div>
+        {% endblock %}
+    </div>
+    <div class="description">
+        {% block description %}
+            {% set long_description = product.getValue('description', locale, scope) %}
+            {% set short_description = product.getValue('short_description', locale, scope) %}                        
+            {% if short_description|striptags|length > 0 %}
+                <div class="short-description">
+                    <div class="icon akeneo-icon"></div>
+                    {{ short_description|striptags }}
+                </div>
+            {% endif %}
+            {% if long_description|striptags|length > 0 %}
+                <div class="long-description">
+                    {% set text = long_description|striptags|split(' ') %}
+                    {% if text|length > 50 %}
+                        <div class="left-column">                        
+                            {% for t in text|slice(0, 55) %}
+                                {{ t }} 
+                            {% endfor %}
+                        </div>
+                        <div class="right-column">
+                            {% for t in text|slice(55, 100) %}
+                                {{ t }} 
+                            {% endfor %}
+                            {% if text|length > 100 %}...{% endif %}
+                        </div>
+                    {% else %}
+                        {{ long_description|striptags }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endblock %}
+    </div>
+    <div class="images">
+        {% block images %} 
+            {% for attribute in imageAttributes %} 
+                {% set imagePath = image_path(product, attribute, locale, scope) %} 
+                {% if imagePath %}
+                    <img src="{{ imagePath }}" /> 
+                {% endif %} 
+            {% endfor %} 
+        {% endblock %}
+    </div>
+    <div class="attribute-groups">
+        {% for group, attributes in groupedAttributes %}
+            {% block attribute_group %}
+                <div class="group">
+                    <h3>{{ group }}{{ group.name }}</h3>
+                    {% for attribute in attributes %}
+                        {% if attribute.code != 'description' and attribute.code != 'short_description' %}
+                            {% block attribute %} 
+                                {% if 'pim_catalog_image' == attribute.attributeType and product.getValue(attribute.code, locale, scope).media is not null %} 
+                                    {% set content = product.getValue(attribute.code, locale, scope).media.originalFilename %} 
+                                    {% set manualHeight = false %} 
+                                {% else %} 
+                                    {% set content = product.getValue(attribute.code, locale, scope) %} 
+                                    {% if content != null %} 
+                                        {% set manualHeight = attribute.label|length >(content.__toString()|length / 3) %} 
+                                    {% else %} 
+                                        {% set manualHeight = true %} 
+                                    {% endif %} 
+                                {% endif %}
+                                <div class="attributes" {% if manualHeight %} style="height: {{ (attribute.label|length / 30)|round(0, 'ceil') * 18 + 10 }}px" {% endif %}>
+                                    <div class="left-column">
+                                        {{ attribute.label }}
+                                    </div>
+                                    <div class="right-column">
+                                        {% if 'pim_catalog_textarea' == attribute.attributeType and attribute.isWysiwygEnabled %} 
+                                            {{ content|raw }}
+                                        {% else %} 
+                                            {{ content }} 
+                                        {% endif %} 
+                                        &nbsp;
+                                    </div>
+                                </div>
+                            {% endblock %} 
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endblock %}
+        {% endfor %}
+    </div>
+</body>
+
+</html>
