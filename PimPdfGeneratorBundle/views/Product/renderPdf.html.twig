@@ -15,6 +15,8 @@
             }
         {% endif %}
 
+        /**@import url('https://fonts.googleapis.com/css?family=Lato:400,700');**/
+
         * {
             font-family: 'Custom font', Helvetica;
             font-weight: 400;
@@ -69,17 +71,17 @@
 
         .long-description .left-column {
             width: 49%;
-            padding: 2px;
+            text-align: justify;
             position: absolute;
             left: 0;
-            text-align: justify;
+            margin-bottom: 20px;
         }
 
         .long-description .right-column {
             width: 49%;
             margin-left: 51%;
-            padding: 2px;
             text-align: justify;
+            margin-bottom: 20px;
         }
 
         .images {
@@ -127,10 +129,11 @@
         .attributes {
             clear: both;
             position: relative;
+            /**border: 1px solid #aaa;**/
             border-bottom: solid 1px #ccc;
         }
 
-        .left-column {
+        .attributes .left-column {
             position: absolute;
             left: 0;
             padding: 2px 5px;
@@ -139,7 +142,7 @@
             color:#677688;
         }
 
-        .right-column {
+        .attributes .right-column {
             margin-left: 35%;
             padding: 2px 5px;
             width: 65%;
@@ -165,36 +168,35 @@
     </div>
     <div class="description">
         {% block description %}
-            {% set long_description = product.getValue('description', locale, scope) %}
-            {% set short_description = product.getValue('short_description', locale, scope) %}                        
-            {% if short_description|striptags|length > 0 %}
+            {% set long_description = product.getValue('description', locale, scope)|striptags %}
+            {% set short_description = product.getValue('short_description', locale, scope)|striptags %}
+            {% if short_description|length > 0 %}
                 <div class="short-description">
                     <div class="icon akeneo-icon"></div>
-                    {{ short_description|striptags }}
+                    {{ short_description }}
                 </div>
             {% endif %}
-            {% if long_description|striptags|length > 0 %}
-                <div class="long-description">
-                    {% set text = long_description|striptags|split(' ') %}
-                    {% if text|length > 50 %}
-                        <div class="left-column">                        
-                            {% for t in text|slice(0, 55) %}
-                                {{ t }} 
-                            {% endfor %}
-                        </div>
-                        <div class="right-column">
-                            {% for t in text|slice(55, 100) %}
-                                {{ t }} 
-                            {% endfor %}
-                            {% if text|length > 100 %}...{% endif %}
-                        </div>
-                    {% else %}
-                        {{ long_description|striptags }}
-                    {% endif %}
-                </div>
-            {% endif %}
+            <div class="long-description">
+                {% set text = long_description|split(' ') %}
+                {% if text|length > 50 %}
+                    {% set text_length_left_col = (text|length / 2)|round(0, 'floor') %}
+                    <div class="left-column">                        
+                        {% for t in text|slice(0, text_length_left_col) %}
+                            {{ t }} 
+                        {% endfor %}
+                    </div>
+                    <div class="right-column">
+                        {% for t in text|slice(text_length_left_col, text|length) %}
+                            {{ t }} 
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ long_description }}
+                {% endif %}
+            </div>
         {% endblock %}
     </div>
+    <div style="clear:both;"></div>
     <div class="images">
         {% block images %} 
             {% for attribute in imageAttributes %} 
@@ -206,42 +208,44 @@
         {% endblock %}
     </div>
     <div class="attribute-groups">
-        {% for group, attributes in groupedAttributes %}
-            {% block attribute_group %}
-                <div class="group">
-                    <h3>{{ group }}{{ group.name }}</h3>
-                    {% for attribute in attributes %}
-                        {% if attribute.code != 'description' and attribute.code != 'short_description' %}
-                            {% block attribute %} 
-                                {% if 'pim_catalog_image' == attribute.attributeType and product.getValue(attribute.code, locale, scope).media is not null %} 
-                                    {% set content = product.getValue(attribute.code, locale, scope).media.originalFilename %} 
-                                    {% set manualHeight = false %} 
-                                {% else %} 
-                                    {% set content = product.getValue(attribute.code, locale, scope) %} 
-                                    {% if content != null %} 
-                                        {% set manualHeight = attribute.label|length >(content.__toString()|length / 3) %} 
+        {% for group, attributes in groupedAttributes %} 
+            {% if group.code != 'medias' %}
+                {% block attribute_group %}
+                    <div class="group">
+                        <h3>{{ group }}{{ group.name }}</h3>
+                        {% for attribute in attributes %}
+                            {% if attribute.code != 'description' and attribute.code != 'short_description' %}
+                                {% block attribute %} 
+                                    {% if 'pim_catalog_image' == attribute.attributeType and product.getValue(attribute.code, locale, scope).media is not null %} 
+                                        {% set content = product.getValue(attribute.code, locale, scope).media.originalFilename %} 
+                                        {% set manualHeight = false %} 
                                     {% else %} 
-                                        {% set manualHeight = true %} 
-                                    {% endif %} 
-                                {% endif %}
-                                <div class="attributes" {% if manualHeight %} style="height: {{ (attribute.label|length / 30)|round(0, 'ceil') * 18 + 10 }}px" {% endif %}>
-                                    <div class="left-column">
-                                        {{ attribute.label }}
-                                    </div>
-                                    <div class="right-column">
-                                        {% if 'pim_catalog_textarea' == attribute.attributeType and attribute.isWysiwygEnabled %} 
-                                            {{ content|raw }}
+                                        {% set content = product.getValue(attribute.code, locale, scope) %} 
+                                        {% if content != null %} 
+                                            {% set manualHeight = attribute.label|length >(content.__toString()|length / 3) %} 
                                         {% else %} 
-                                            {{ content }} 
+                                            {% set manualHeight = true %} 
                                         {% endif %} 
-                                        &nbsp;
+                                    {% endif %}
+                                    <div class="attributes" {% if manualHeight %} style="height: {{ (attribute.label|length / 30)|round(0, 'ceil') * 18 + 10 }}px" {% endif %}>
+                                        <div class="left-column">
+                                            {{ attribute.label }}
+                                        </div>
+                                        <div class="right-column">
+                                            {% if 'pim_catalog_textarea' == attribute.attributeType and attribute.isWysiwygEnabled %} 
+                                                {{ content|raw }}
+                                            {% else %} 
+                                                {{ content }} 
+                                            {% endif %} 
+                                            &nbsp;
+                                        </div>
                                     </div>
-                                </div>
-                            {% endblock %} 
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            {% endblock %}
+                                {% endblock %} 
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endblock %}
+            {% endif %} 
         {% endfor %}
     </div>
 </body>
